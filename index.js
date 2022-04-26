@@ -1,5 +1,13 @@
 const util = require('util');
 const inquirer = require('inquirer');
+const fs=require('fs');
+const generateHtml =require('./util/generateHtml');
+
+const Manager = require('./lib/Manager');
+const Engineer = require('./lib/Engineer');
+const Intern = require('./lib/Intern');
+
+const answers = [];
 
 
 const getOffice =()=>{
@@ -26,6 +34,8 @@ const getOffice =()=>{
 
     ]).then(ans=>{
         console.log("Team Manager Added");
+        const manager = new Manager(ans.name,ans.id,ans.email,ans.officeNumber);
+        answers.push(manager);
         ask();
     })
 
@@ -40,15 +50,18 @@ const ask=()=>{
             choices:["Add an Engineer","Add an Intern","All done adding"]
         }
 
-]).then (next =()=>{
+]).then (next=>{
     switch(next.selection){
         case "Add an Engineer":
-            getGitHub();
+            getGithub();
+            break;
         case "Add an Intern":
             getSchool();
+            break;
         case "All done adding":
             console.log("Everyone is added");
-            break;  
+            generatePort();
+        break;  
     }
 })
 }
@@ -71,12 +84,14 @@ const getGithub=()=>{
             message:"Please enter the engineer's email address:"
         },
         {
-            type:"type",
-            name:"GitHubUser",
+            type:"input",
+            name:"github",
             message:"What is the engineer's GitHub username?"
         }
 
-    ]).then (next =()=>{
+    ]).then (ans=>{
+        const engineer = new Engineer(ans.name,ans.id,ans.email,ans.github);
+        answers.push(engineer);
         ask();
     })
 }
@@ -102,9 +117,16 @@ const getSchool=()=>{
             name:"school",
             message:"What is the intern's school?"
         }
-    ]).then (next =()=>{
+    ]).then (ans=>{
+        const intern = new Intern(ans.name,ans.id,ans.email,ans.school);
+        answers.push(intern);
         ask();
     })
 
 }
 getOffice();
+generatePort=()=>{fs.writeFile(`./TeamPortfolio.html`, generateHtml(answers),function(err){
+    if(err){
+        throw err;
+    }
+})};
